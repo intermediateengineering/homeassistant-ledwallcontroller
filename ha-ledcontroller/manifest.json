@@ -1,9 +1,9 @@
 {
-	"domain": "multivision_ha",
-	"name": "Multivision",
+	"domain": "ha-ledcontroller",
+	"name": "LED Controller",
 	"version": "0.0.1",
 	"documentation": "https://gitlab.im-en.com/p00308_klubhaus/multivision-led",
-	"requirements": ["multivision@git+ssh://git@gitlab.im-en.com:60422/p00308_klubhaus/multivision-led.git"],
+	"requirements": ["ledcontroller@git+ssh://git@gitlab.im-en.com:60422/p00308_klubhaus/multivision-led.git"],
 	"codeowners": [
 		"@intermediateengineering"
 	],

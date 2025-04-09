@@ -1,14 +1,14 @@
 [project]
-name = "multivision-ha"
+name = "HA-LED-Controller"
 version = "0.1.0"
-description = "Integration for Multivision LED Controllers"
+description = "HA Integration for LED Controllers"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "multivision@git+ssh://git@gitlab.im-en.com:60422/p00308_klubhaus/multivision-led.git",
+    "ledcontroller@git+ssh://git@gitlab.im-en.com:60422/p00308_klubhaus/multivision-led.git",
 ]
 
 [dependency-groups]
 dev = [
-    "homeassistant>=2025.3.4",
+    "homeassistant==2025.2.1",
 ]

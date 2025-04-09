@@ -1,4 +1,4 @@
-# Home Assistant Multivision
+# Home Assistant LED Controller
 
 ## Local Testing
 
