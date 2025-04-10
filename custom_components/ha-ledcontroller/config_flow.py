@@ -15,7 +15,9 @@ SCHEMA = vol.Schema(
         vol.Required(CONF_HOST): cv.string,
         vol.Required(CONF_PORT, default=4010): cv.port,
         vol.Required(CONF_ID, default=1): cv.positive_int,
-        vol.Required(CONF_TYPE, default=CONF_MULTIVISION): vol.In([CONF_MULTIVISION, CONF_ONLYGLASS])
+        vol.Required(CONF_TYPE, default=CONF_MULTIVISION): vol.In(
+            [CONF_MULTIVISION, CONF_ONLYGLASS]
+        ),
     }
 )
 

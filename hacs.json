@@ -1,0 +1,6 @@
+{
+	"name": "LED Controller",
+	"content_in_root": false,
+	"country": ["DE"],
+	"homeassistant": "2025.3.0"
+}

@@ -1,9 +1,10 @@
 from __future__ import annotations
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
-from ledcontroller import TCPHandler
+from ledwallcontroller import TCPHandler
 from dataclasses import dataclass
 from .const import DOMAIN, CONN_HANDLERS
+
 
 @dataclass
 class Connection:
@@ -12,10 +13,8 @@ class Connection:
 
     @classmethod
     def from_handler(cls, handler: TCPHandler) -> Connection:
-        return Connection(
-            host=handler.host,
-            port=handler.port
-        )
+        return Connection(host=handler.host, port=handler.port)
+
 
 async def async_setup_connection_handler(hass: HomeAssistant, connection: Connection):
     set_or_create_handler(hass, connection)
@@ -27,7 +26,10 @@ async def async_setup_connection_handler(hass: HomeAssistant, connection: Connec
         raise ConfigEntryNotReady() from e
 
     if not handler.connected:
-        raise ConfigEntryNotReady(f"Couldnt connect to LED Controller @ tcp://{connection.host}:{connection.port}")
+        raise ConfigEntryNotReady(
+            f"Couldnt connect to LED Controller @ tcp://{connection.host}:{connection.port}"
+        )
+
 
 def set_or_create_handler(hass: HomeAssistant, connection: Connection):
     """Ensures that exactly one TCPHandler is set per Connection in Homeassistant."""
@@ -39,15 +41,15 @@ def set_or_create_handler(hass: HomeAssistant, connection: Connection):
         if Connection.from_handler(handler) == connection:
             return
 
-    handlers.append(TCPHandler(
-        host=connection.host,
-        port=connection.port
-    ))
+    handlers.append(TCPHandler(host=connection.host, port=connection.port))
+
 
 def get_handler(hass: HomeAssistant, connection: Connection) -> TCPHandler | None:
     """Get the Connection-Handler for the connection."""
     if not hass.data[DOMAIN][CONN_HANDLERS]:
-        raise Exception(f"Couldnt find any connection for {connection.host}:{connection.port}")
+        raise Exception(
+            f"Couldnt find any connection for {connection.host}:{connection.port}"
+        )
 
     for handler in hass.data[DOMAIN][CONN_HANDLERS]:
         if Connection.from_handler(handler) == connection:

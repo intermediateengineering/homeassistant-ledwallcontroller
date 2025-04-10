@@ -1,14 +1,29 @@
+[build-system]
+build-backend = "hatchling.build"
+
+requires = [ "hatchling" ]
+
 [project]
-name = "HA-LED-Controller"
+name = "ha-led-controller"
 version = "0.1.0"
-description = "HA Integration for LED Controllers"
+description = "Homeassistant Integration for LED Controllers"
 readme = "README.md"
+license = { text = "MIT" }
+authors = [ { name = "Intermediate Engineering GmbH", email = "info@im-en.com" } ]
 requires-python = ">=3.13"
+classifiers = [ "Programming Language :: Python :: 3 :: Only", "Programming Language :: Python :: 3.13" ]
 dependencies = [
-    "ledcontroller@git+ssh://git@gitlab.im-en.com:60422/p00308_klubhaus/multivision-led.git",
+  "ledwallcontroller>=0.1",
 ]
 
 [dependency-groups]
-dev = [
-    "homeassistant==2025.2.1",
-]
+dev = [ "homeassistant==2025.4", "ruff>=0.11.2" ]
+
+[tool.hatch.build.targets.wheel]
+packages = [ "custom_components/ha-ledcontroller" ]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.ruff]
+target-version = "py313"

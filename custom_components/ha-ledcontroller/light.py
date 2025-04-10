@@ -19,8 +19,8 @@ from homeassistant.helpers.update_coordinator import UpdateFailed
 from homeassistant.const import CONF_ID, CONF_TYPE
 from . import const as c
 from .helpers import Connection, get_handler
-from ledcontroller import Multivision, OnlyGlass, TCPHandler, Controller
 from dataclasses import dataclass
+from ledwallcontroller import Multivision, OnlyGlass, TCPHandler, Controller
 
 _LOGGER = logging.getLogger(__name__)
 
