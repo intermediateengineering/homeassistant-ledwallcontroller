@@ -1,11 +1,16 @@
 """Platform for Generic LED Controller integration."""
+
 from __future__ import annotations
 
 import logging
 
 # Import the device class from the component that you want to support
-from homeassistant.components.light import (ATTR_BRIGHTNESS, ColorMode,
-                                            LightEntity)
+from homeassistant.components.light import (
+    ATTR_BRIGHTNESS,
+    ColorMode,
+    LightEntity,
+    LightEntityDescription,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -15,8 +20,18 @@ from homeassistant.const import CONF_ID, CONF_TYPE
 from . import const as c
 from .helpers import Connection, get_handler
 from ledcontroller import Multivision, OnlyGlass, TCPHandler, Controller
+from dataclasses import dataclass
 
 _LOGGER = logging.getLogger(__name__)
+
+
+@dataclass(kw_only=True, frozen=True)
+class LEDControllerLightEntityDescription(LightEntityDescription):
+    """Description for LED Controller light entities."""
+
+    controller: Controller
+    handler: TCPHandler
+    controller_type: str
 
 
 async def async_setup_entry(
@@ -26,35 +41,43 @@ async def async_setup_entry(
 
     conn: Connection = entry.runtime_data
     handler: TCPHandler = get_handler(hass, conn)
-    id = entry.data[CONF_ID]
+    id = None
 
     controller: Controller = None
     match entry.data[CONF_TYPE]:
         case c.CONF_MULTIVISION:
+            id = entry.data[CONF_ID]
             controller = Multivision(handler, id)
+            controller_type = c.CONF_MULTIVISION
+            name = f"Module #{id}"
         case c.CONF_ONLYGLASS:
             controller = OnlyGlass(handler)
+            controller_type = c.CONF_ONLYGLASS
+            name = "Brightness"
 
-    async_add_entities(
-        [LEDControllerLightEntity(controller, entry)],
-        update_before_add=True)
+    description = LEDControllerLightEntityDescription(
+        key=f"led_controller_light_{id or 0}",
+        name=name,
+        controller=controller,
+        handler=handler,
+        controller_type=controller_type,
+        icon="mdi:led-outline",
+    )
+
+    async_add_entities([LEDControllerLightEntity(description)], update_before_add=True)
 
 
 class LEDControllerLightEntity(LightEntity):
     """Representation of an Generic LED Controller as Light Entity"""
 
-    def __init__(self, controller: Controller, entry: ConfigEntry) -> None:
+    _attr_has_entity_name = True
+    _attr_supported_color_modes = {ColorMode.BRIGHTNESS}
+    _attr_color_mode = ColorMode.BRIGHTNESS
+
+    def __init__(self, entity_description: LEDControllerLightEntityDescription) -> None:
         """Initialize the LED light."""
-        self._controller = controller
-        self._controller_type = controller.__class__.__name__
-        self._entry_id = entry.entry_id
-        id = entry.data[CONF_ID]
-
-        self._attr_name = f"{self._controller_type} LED Controller #{id}"  # Or something user-friendly
-        self._attr_unique_id = f"tcp_led_controller_{id}_@_{controller._handler.host}:{controller._handler.port}"  # Provide a stable, unique ID
-
-        self._attr_supported_color_modes = {ColorMode.BRIGHTNESS}
-        self._attr_color_mode = ColorMode.BRIGHTNESS
+        self.entity_description = entity_description
+        self._attr_unique_id = f"{entity_description.key}_{entity_description.handler.host}:{entity_description.handler.port}"
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -64,16 +87,16 @@ class LEDControllerLightEntity(LightEntity):
         will group them under one device in Home Assistant.
         """
         return DeviceInfo(
-            identifiers={(c.DOMAIN, self._entry_id)},
-            name=f"{self._controller_type} LED Controller",
-            manufacturer=self._controller_type,
+            identifiers={(c.DOMAIN, self._attr_unique_id)},
+            name=f"{self.entity_description.controller_type} LED Controller",
+            manufacturer=self.entity_description.controller_type,
             model="TCP LED Controller",
             sw_version="1.0",
         )
 
     @property
     def brightness(self) -> int | None:
-        return self._controller.brightness_8bit
+        return self.entity_description.controller.brightness_8bit
 
     @property
     def is_on(self) -> bool | None:
@@ -86,19 +109,21 @@ class LEDControllerLightEntity(LightEntity):
         """Turn on the light."""
         # If brightness was passed in the service call, use it
         brightness = kwargs.get(ATTR_BRIGHTNESS, 255)
-        _LOGGER.debug( "Setting %s to brightness=%d", self._attr_name, self._attr_brightness)
-        await self._controller.set_brightness_8bit(brightness)
+        _LOGGER.debug(
+            "Setting %s to brightness=%d", self.entity_description.name, brightness
+        )
+        await self.entity_description.controller.set_brightness_8bit(brightness)
         self.async_schedule_update_ha_state(force_refresh=True)
 
     async def async_turn_off(self, **kwargs):
         """Set the brightness of the controller to 0."""
-        _LOGGER.debug("Turning off %s", self._attr_name)
-        await self._controller.set_brightness_percent(0)
+        _LOGGER.debug("Turning off %s", self.entity_description.name)
+        await self.entity_description.controller.set_brightness_percent(0)
         self.async_schedule_update_ha_state(force_refresh=True)
 
     async def async_update(self):
         """Fetch new data from the controller."""
         try:
-            await self._controller.update()
+            await self.entity_description.controller.update()
         except Exception as e:
             raise UpdateFailed() from e
