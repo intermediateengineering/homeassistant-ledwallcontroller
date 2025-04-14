@@ -3,7 +3,7 @@
 	"name": "LED Controller",
 	"version": "0.0.1",
 	"documentation": "https://github.com/intermediateengineering/homeassistant-ledwallcontroller",
-	"requirements": ["ledwallcontroller==0.1.0"],
+	"requirements": ["ledwallcontroller==0.2.0"],
 	"codeowners": ["@intermediateengineering"],
 	"integration_type": "device",
 	"config_flow": true
