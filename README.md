@@ -46,7 +46,7 @@ It is possible to show the info and debug logs for the Pi-hole V6 integration, t
 logger:
   default: warning
   logs:
-    # Log for Pi-hole V6 integation
+    # Log settings for integration
     custom_components.ha-ledcontroller: debug
 ```
 
